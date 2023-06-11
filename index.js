@@ -28,8 +28,30 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const usersCollection = client.db("kidsClubDB").collection("users");
 
 
+    // Users related APIS
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+
+    // Class related APIS
+
+    app.get('/class', async(req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.post('/class', async(req, res) => {
+      const newClass = req.body;
+      const result = await classCollection.insertOne(newClass);
+      res.send(result);
+    })
 
 
 
