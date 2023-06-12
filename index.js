@@ -190,6 +190,7 @@ async function run() {
 
     // Class related APIS
 
+
     /* All Class */
     app.get('/allClasses', async(req, res) => {
       console.log("bogda");
@@ -276,8 +277,14 @@ async function run() {
     
         })
     
-  
+        /* All Approved Classes */
 
+        app.post('/approvedclasses', verifyJWT, async(req, res) => {
+          const classstatus = 'approved';
+          const query = { classstatus : classstatus};
+          const result = await classCollection.find(query).toArray();
+          res.send(result);
+        })
 
 
 
