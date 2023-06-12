@@ -288,7 +288,7 @@ async function run() {
 
         /**Select class by students */
 
-        app.post('/selectedclases', verifyJWT, async(req, res) => {
+        app.post('/selectedclases', async(req, res) => {
           const selectedclasses = req.body;
           const result = await studentClassCollection.insertOne(selectedclasses);
           res.send(result);
