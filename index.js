@@ -47,6 +47,7 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db("kidsClubDB").collection("users");
+    const classCollection = client.db("kidsClubDB").collection("classes");
 
     // JWT 
 
@@ -172,16 +173,94 @@ async function run() {
 
     // Class related APIS
 
-    app.get('/class', async(req, res) => {
+    /* All Class */
+    app.get('/allClasses', async(req, res) => {
+      console.log("bogda");
       const result = await classCollection.find().toArray();
       res.send(result);
     })
 
-    app.post('/class', async(req, res) => {
+
+    /*  Class add by Instructor */
+
+    app.post('/classes', verifyJWT, async(req, res) => {
       const newClass = req.body;
       const result = await classCollection.insertOne(newClass);
       res.send(result);
     })
+
+    /*  Class for specific email by instructor */
+    app.get('/classes', verifyJWT, async(req, res) => {
+     
+      const email = req.decoded.email;
+     
+      // console.log("The email: ", email);
+      if(!email){
+        res.send([]);
+      }
+      const query = { email : email};
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    /* Class Status Approved by ADmin*/ 
+
+    app.put('/classes/status/approved/:id', async(req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          classstatus: 'approved'
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
+
+      /* Class Status Deny by ADmin*/ 
+
+      app.put('/classes/status/deny/:id', async(req, res) => {
+        const id = req.params.id;
+        console.log(id);
+        const filter = { _id: new ObjectId(id) };
+  
+        const updateDoc = {
+          $set: {
+            classstatus: 'deny'
+          },
+        };
+  
+        const result = await classCollection.updateOne(filter, updateDoc);
+        res.send(result);
+  
+      })
+
+         /* Class Feedback send by ADmin*/ 
+
+         app.put('/classes/feedback/:id/:feedback', async(req, res) => {
+          const id = req.params.id;
+          const feedback =  req.params.feedback;
+          console.log(id, feedback);
+          const filter = { _id: new ObjectId(id) };
+    
+          const updateDoc = {
+            $set: {
+
+              feedback: feedback,
+            },
+          };
+    
+          const result = await classCollection.updateOne(filter, updateDoc);
+          res.send(result);
+    
+        })
+    
+  
+
 
 
 
