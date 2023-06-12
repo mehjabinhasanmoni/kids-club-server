@@ -48,6 +48,7 @@ async function run() {
 
     const usersCollection = client.db("kidsClubDB").collection("users");
     const classCollection = client.db("kidsClubDB").collection("classes");
+    const studentClassCollection = client.db("kidsClubDB").collection("selectedclasses");
 
     // JWT 
 
@@ -193,7 +194,6 @@ async function run() {
 
     /* All Class */
     app.get('/allClasses', async(req, res) => {
-      console.log("bogda");
       const result = await classCollection.find().toArray();
       res.send(result);
     })
@@ -286,7 +286,13 @@ async function run() {
           res.send(result);
         })
 
+        /**Select class by students */
 
+        app.post('/selectedclases', verifyJWT, async(req, res) => {
+          const selectedclasses = req.body;
+          const result = await studentClassCollection.insertOne(selectedclasses);
+          res.send(result);
+        })
 
     
     // Send a ping to confirm a successful connection
