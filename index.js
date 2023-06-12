@@ -279,7 +279,7 @@ async function run() {
     
         /* All Approved Classes */
 
-        app.post('/approvedclasses', verifyJWT, async(req, res) => {
+        app.get('/approvedclasses', async(req, res) => {
           const classstatus = 'approved';
           const query = { classstatus : classstatus};
           const result = await classCollection.find(query).toArray();
