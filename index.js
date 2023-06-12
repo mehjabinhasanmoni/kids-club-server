@@ -294,6 +294,12 @@ async function run() {
           res.send(result);
         })
 
+        /**Selected all class for students */
+        app.get('/selectedclases', verifyJWT, async(req, res) => {
+          const result = await studentClassCollection.find().toArray();
+          res.send(result);
+        })
+
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
