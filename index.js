@@ -52,11 +52,14 @@ async function run() {
 
     // JWT 
 
-    app.post('/jwt', (req, res) => {
+    app.post('/jwt', async(req, res) => {
       const user = req.body;
+      
+      const query = { email: req.body.email }
+      const userrole = await usersCollection.findOne(query);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
 
-      res.send({ token })
+      res.send({ token,userInfo:userrole })
     })
 
     // Verify Admin
@@ -300,6 +303,16 @@ async function run() {
           res.send(result);
         })
 
+
+        /* Delete selected class by students */
+        app.delete('/selectedclases/:id', async (req, res) => {
+          const id = req.params.id;
+          const query = { _id: new ObjectId(id) };
+          const result = await studentClassCollection.deleteOne(query);
+          res.send(result);
+        }) 
+
+        
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
