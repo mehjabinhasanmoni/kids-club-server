@@ -4,6 +4,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000;
 
 // MiddleWare
@@ -49,6 +50,7 @@ async function run() {
     const usersCollection = client.db("kidsClubDB").collection("users");
     const classCollection = client.db("kidsClubDB").collection("classes");
     const studentClassCollection = client.db("kidsClubDB").collection("selectedclasses");
+    const paymentCollection = client.db("kidsClubDB").collection("payments");
 
     // JWT 
 
@@ -313,11 +315,26 @@ async function run() {
         }) 
 
         /* Select specific class info for payment*/ 
-        app.get('/selectedclass/:classid', async (req, res) => {
-          const id = req.params.id;
+        app.get('/selectedclass/:classid', verifyJWT, async (req, res) => {
+          const id = req.params.classid;
           const query = { _id: new ObjectId(id) };
           const result = await studentClassCollection.findOne(query);
           res.send(result);
+        })
+
+        /* create payment intent*/
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+          const { price } = req.body;
+          const amount = parseInt(price * 100);
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount,
+            currency: 'usd',
+            payment_method_types: ['card']
+          });
+    
+          res.send({
+            clientSecret: paymentIntent.client_secret
+          })
         })
 
 
