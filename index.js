@@ -51,6 +51,7 @@ async function run() {
     const classCollection = client.db("kidsClubDB").collection("classes");
     const studentClassCollection = client.db("kidsClubDB").collection("selectedclasses");
     const paymentCollection = client.db("kidsClubDB").collection("payments");
+    const enrollmentCollection = client.db("kidsClubDB").collection("enrollment");
 
     // JWT 
 
@@ -204,6 +205,8 @@ async function run() {
     })
 
 
+  
+
     /*  Class add by Instructor */
 
     app.post('/classes', verifyJWT, async(req, res) => {
@@ -349,16 +352,36 @@ async function run() {
           /** */
           app.post('/payments', verifyJWT, async (req, res) => {
             const payment = req.body;
-            const insertResult = await paymentCollection.insertOne(payment);
-           
+            const insertResult = await paymentCollection.insertOne(payment.paymentInfo);
+            const insertEnrollment = await enrollmentCollection.insertOne(payment.classInfo);
+
+            const filter = { _id: new ObjectId(payment.classes.selectedClassId) };
+            const updateDoc = {
+              $set: {
+                availseats: payment.classes.availseats,
+                totalenrolledstudents:  payment.classes.totalenrolledstudents
+              },
+            };
+      
+            const updateEnrollment = await classCollection.updateOne(filter, updateDoc )
 
             const insertedPaymentSelectClassId = insertResult.paymentSelectClassId;
-            const query = { paymentSelectClassId: insertedPaymentSelectClassId };
+            const query = { _id: new ObjectId(payment.classInfo._id) };
             const deleteResult = await studentClassCollection.deleteOne(query);
+
+      
 
             res.send({ insertResult, deleteResult });
           })
       
+       /* get single class  */
+      app.get('/singleClass/:id', async(req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await classCollection.findOne(query);
+        res.send(result);
+      })
+
           //** PAyment history */
 
           app.get('/paymentshistory', verifyJWT, async (req, res) => {
@@ -368,10 +391,12 @@ async function run() {
           }
           const query = { email : email};
 
-          const result = await paymentCollection.find(query).toArray();
+          const result = await paymentCollection.find(query).sort({ date: -1 }).toArray();
           res.send(result);
 
           })
+
+        
 
 
          
