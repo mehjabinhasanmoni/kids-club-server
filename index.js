@@ -361,7 +361,17 @@ async function run() {
       
           //** PAyment history */
 
+          app.get('/paymentshistory', verifyJWT, async (req, res) => {
+            const email = req.decoded.email;
+          if(!email){
+            res.send([]);
+          }
+          const query = { email : email};
 
+          const result = await paymentCollection.find(query).toArray();
+          res.send(result);
+
+          })
 
 
          
