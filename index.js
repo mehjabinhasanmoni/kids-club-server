@@ -300,8 +300,15 @@ async function run() {
         })
 
         /**Selected all class for students */
+        
         app.get('/selectedclases', verifyJWT, async(req, res) => {
-          const result = await studentClassCollection.find().toArray();
+          const email = req.decoded.email;
+          if(!email){
+            res.send([]);
+          }
+          const query = { email : email};
+
+          const result = await studentClassCollection.find(query).toArray();
           res.send(result);
         })
 
@@ -315,7 +322,7 @@ async function run() {
         }) 
 
         /* Select specific class info for payment*/ 
-        app.get('/selectedclass/:classid', verifyJWT, async (req, res) => {
+        app.get('/selectedclass/:classid', async (req, res) => {
           const id = req.params.classid;
           const query = { _id: new ObjectId(id) };
           const result = await studentClassCollection.findOne(query);
@@ -336,6 +343,28 @@ async function run() {
             clientSecret: paymentIntent.client_secret
           })
         })
+
+          // payment related apis
+
+          /** */
+          app.post('/payments', verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const insertResult = await paymentCollection.insertOne(payment);
+           
+
+            const insertedPaymentSelectClassId = insertResult.paymentSelectClassId;
+            const query = { paymentSelectClassId: insertedPaymentSelectClassId };
+            const deleteResult = await studentClassCollection.deleteOne(query);
+
+            res.send({ insertResult, deleteResult });
+          })
+      
+          //** PAyment history */
+
+
+
+
+         
 
 
     
